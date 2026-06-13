@@ -10,8 +10,11 @@
   },
   "dependencies": {
     "@insforge/sdk": "^1.4.0",
+    "@react-pdf/renderer": "^4.5.1",
     "lucide-react": "^1.17.0",
     "next": "16.2.9",
+    "openai": "^6.42.0",
+    "pdf-parse": "^2.4.5",
     "posthog-js": "^1.386.6",
     "posthog-node": "^5.36.17",
     "react": "19.2.4",
@@ -20,6 +23,7 @@
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
+    "@types/pdf-parse": "^1.1.5",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",

@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { createInsforgeServer } from "@/lib/insforge-server";
 import { createPostHogServer } from "@/lib/posthog-server";
 
-// Define the required fields for completion checks
+// Define the required fields for completion checks on database object
 const REQUIRED_FIELDS = [
   "full_name",
   "phone",
@@ -22,6 +22,7 @@ const REQUIRED_FIELDS = [
 
 export type ProfileFormInput = {
   fullName: string;
+  email: string;
   phone: string;
   location: string;
   linkedinUrl: string;
@@ -44,20 +45,32 @@ export type ProfileFormInput = {
   fieldOfStudy: string;
   institution: string;
   graduationYear: string;
-  jobTitlesSeeking: string[];
+  jobTitlesSeeking: string;
   remotePreference: string;
   salaryExpectation: string;
-  preferredLocations: string[];
+  preferredLocations: string;
   coverLetterTone: string;
 };
 
 // Calculate completion details
-export function calculateCompletion(profile: Record<string, any>) {
+export async function calculateCompletion(profile: Record<string, any>) {
   const missing: string[] = [];
   let filledCount = 0;
 
+  // Extract nested education fields if present
+  const education = profile?.education || {};
+
   REQUIRED_FIELDS.forEach((field) => {
-    const value = profile[field];
+    let value: any = undefined;
+
+    if (field === "degree" || field === "field_of_study" || field === "institution" || field === "graduation_year") {
+      // education fields are stored inside education jsonb column
+      const mappedEduKey = field === "field_of_study" ? "fieldOfStudy" : field === "graduation_year" ? "graduationYear" : field;
+      value = education[mappedEduKey];
+    } else {
+      value = profile[field];
+    }
+
     let isFilled = false;
 
     if (Array.isArray(value)) {
@@ -83,13 +96,14 @@ export function calculateCompletion(profile: Record<string, any>) {
   };
 }
 
+
 /**
  * Saves or updates the current user's profile in the database.
  */
 export async function saveProfile(data: ProfileFormInput) {
   try {
     const insforge = await createInsforgeServer();
-    const { data: { user }, error: authError } = await insforge.auth.getUser();
+    const { data: { user }, error: authError } = await insforge.auth.getCurrentUser();
 
     if (authError || !user) {
       return { success: false, error: "Unauthorized" };
@@ -117,18 +131,22 @@ export async function saveProfile(data: ProfileFormInput) {
         institution: data.institution,
         graduationYear: data.graduationYear,
       },
-      job_titles_seeking: data.jobTitlesSeeking,
+      job_titles_seeking: data.jobTitlesSeeking
+        ? data.jobTitlesSeeking.split(",").map((s) => s.trim()).filter(Boolean)
+        : [],
       remote_preference: data.remotePreference,
       salary_expectation: data.salaryExpectation,
-      preferred_locations: data.preferredLocations,
+      preferred_locations: data.preferredLocations
+        ? data.preferredLocations.split(",").map((s) => s.trim()).filter(Boolean)
+        : [],
       cover_letter_tone: data.coverLetterTone,
     };
 
     // Calculate completion metrics
-    const { isComplete } = calculateCompletion(dbProfileData);
+    const { isComplete } = await calculateCompletion(dbProfileData);
 
     // Fetch existing profile to check transition state for PostHog event tracking
-    const { data: existingProfile } = await insforge
+    const { data: existingProfile } = await insforge.database
       .from("profiles")
       .select("is_complete")
       .eq("id", user.id)
@@ -137,7 +155,7 @@ export async function saveProfile(data: ProfileFormInput) {
     const wasCompleteBefore = existingProfile?.is_complete ?? false;
 
     // Upsert the profile record
-    const { error: dbError } = await insforge
+    const { error: dbError } = await insforge.database
       .from("profiles")
       .upsert({
         ...dbProfileData,
@@ -181,22 +199,23 @@ export async function saveProfile(data: ProfileFormInput) {
 export async function uploadResume(fileBase64: string, fileName: string) {
   try {
     const insforge = await createInsforgeServer();
-    const { data: { user }, error: authError } = await insforge.auth.getUser();
+    const { data: { user }, error: authError } = await insforge.auth.getCurrentUser();
 
     if (authError || !user) {
       return { success: false, error: "Unauthorized" };
     }
 
-    // Convert base64 back to Buffer
+    // Convert base64 back to Blob
     const buffer = Buffer.from(fileBase64, "base64");
+    const blob = new Blob([buffer], { type: "application/pdf" });
+
+    // Attempt to remove existing file to avoid duplicate errors (simulating upsert)
+    await insforge.storage.from("resumes").remove([`${user.id}/resume.pdf`]);
 
     // Upload to InsForge Storage bucket 'resumes' at resumes/{user_id}/resume.pdf
     const { data: uploadData, error: uploadError } = await insforge.storage
       .from("resumes")
-      .upload(`${user.id}/resume.pdf`, buffer, {
-        contentType: "application/pdf",
-        upsert: true,
-      });
+      .upload(`${user.id}/resume.pdf`, blob);
 
     if (uploadError) {
       console.error("[actions/profile] upload storage error:", uploadError);
@@ -204,19 +223,19 @@ export async function uploadResume(fileBase64: string, fileName: string) {
     }
 
     // Get public URL of the uploaded resume
-    const { data: urlData } = insforge.storage
+    const publicUrl = insforge.storage
       .from("resumes")
       .getPublicUrl(`${user.id}/resume.pdf`);
 
-    if (!urlData?.publicUrl) {
+    if (!publicUrl) {
       return { success: false, error: "Failed to retrieve public URL for uploaded resume" };
     }
 
     // Update the profiles table with the new resume PDF URL
-    const { error: updateError } = await insforge
+    const { error: updateError } = await insforge.database
       .from("profiles")
       .update({
-        resume_pdf_url: urlData.publicUrl,
+        resume_pdf_url: publicUrl,
         updated_at: new Date().toISOString(),
       })
       .eq("id", user.id);
@@ -227,7 +246,7 @@ export async function uploadResume(fileBase64: string, fileName: string) {
     }
 
     revalidatePath("/profile");
-    return { success: true, url: urlData.publicUrl };
+    return { success: true, url: publicUrl };
   } catch (error) {
     console.error("[actions/profile] upload resume error:", error);
     return { success: false, error: "An unexpected error occurred while uploading resume" };

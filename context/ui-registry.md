@@ -76,43 +76,47 @@ Minimal placeholder layout showing user's signed in state. Center-aligned card o
 ### CompletionIndicator
 - **Path:** `components/profile/CompletionIndicator.tsx`
 - **Last updated:** 2026-06-12
-- **Card Container:** `bg-surface border border-border rounded-2xl p-6 shadow-sm`
-- **Ring Track:** SVG `stroke="var(--color-border)"` strokeWidth 5
-- **Ring Fill:** Dynamic — `var(--color-success)` ≥80%, `var(--color-warning)` ≥50%, `var(--color-error)` below
-- **Percentage Label:** `text-[13px] font-600 text-text-primary`
+- **Card Container:** `bg-surface border border-border rounded-2xl p-6 shadow-sm flex items-center justify-between gap-5`
+- **Ring Track:** SVG `stroke="var(--color-border)"` strokeWidth 6, radius 36
+- **Ring Fill:** Dynamic — `stroke="var(--color-success)"` / `stroke="var(--color-warning)"` / `stroke="var(--color-error)"`
+- **Percentage Label:** `text-[18px] font-bold text-text-primary`
 - **Section Title:** `text-[16px] font-semibold text-text-primary`
-- **Description Text:** `text-[13px] text-text-muted`
-- **Missing Field Tags:** `px-2 py-0.5 rounded-full bg-accent-light text-accent text-[11px] font-semibold uppercase tracking-wide`
+- **Description Text:** `text-[13px] text-text-secondary mt-0.5`
+- **Missing Field Tags:** `px-2 py-0.5 rounded text-[11px] font-semibold bg-[#FEE2E2] text-[#EF4444] uppercase tracking-wide`
 **Pattern notes:**
-SVG-based ring (radius 28, circumference-based dash). Uses same card pattern as all other content sections. Tag pills for missing fields use accent-light / accent colors — same as skills badges elsewhere.
+Horizontal flex layout. SVG progress ring matches the designs with radius 36 (circumference 226px). Missing tags are red-tinted labels below the description.
 
 ### ResumeUpload
 - **Path:** `components/profile/ResumeUpload.tsx`
-- **Last updated:** 2026-06-12
-- **Card Container:** `bg-surface border border-border rounded-2xl p-6 shadow-sm`
-- **Section Title:** `text-[16px] font-semibold text-text-primary` with lucide icon in `text-accent`
-- **Drop Zone:** `border-2 border-dashed border-border rounded-xl py-10 px-6` hover: `hover:border-accent hover:bg-accent-muted`
-- **Upload Icon Container:** `w-11 h-11 rounded-full bg-accent-light` with icon `text-accent`
-- **Primary Text:** `text-[14px] font-medium text-text-primary`
-- **Subtext:** `text-[12px] text-text-muted`
+- **Last updated:** 2026-06-13
+- **Card Container:** `bg-surface border border-border rounded-2xl p-6 shadow-sm flex flex-col gap-5`
+- **Section Title:** `text-[16px] font-semibold text-text-primary`
+- **Drop Zone:** `border border-dashed border-border rounded-xl py-10 px-6 cursor-pointer hover:border-accent hover:bg-accent-muted transition-colors`
+- **Upload Icon Container:** `w-12 h-12 rounded-full bg-accent-light` with cloud-upload SVG inside.
+- **Primary Text:** `text-[14px] font-semibold text-text-primary`
+- **Subtext:** `text-[12px] text-text-muted mt-1`
 - **Divider:** `border-t border-border pt-4`
+- **Generate Button:** `bg-accent text-white hover:bg-accent-dark rounded-md px-4 py-2 text-[13px] font-medium flex items-center gap-2 whitespace-nowrap shrink-0 disabled:opacity-60 transition-colors`
+- **Extract/Download Buttons:** Contains an 'Extract from Resume' button (`id="extract-resume-btn"` / text) when a file is selected, and a 'Download' button (`id="download-resume-btn"`) next to 'View File' for active profiles.
 **Pattern notes:**
-Drop zone uses dashed border that transitions to accent on hover. Icon in a rounded pill container using accent-light background. Card pattern is identical to all other profile section cards.
+Standard container. Drag-and-drop zone transition on hover. Bottom footer contains resume generation trigger with a file icon. Contains custom buttons for extracting from a local file and downloading an existing resume from storage.
 
 ### ProfileForm
 - **Path:** `components/profile/ProfileForm.tsx`
 - **Last updated:** 2026-06-12
-- **Section Card:** `bg-surface border border-border rounded-2xl p-6 shadow-sm`
-- **Section Heading:** `text-[16px] font-semibold text-text-primary border-b border-border pb-3 mb-5`
+- **Section Card:** Single outer container card wrapping all sections: `bg-surface border border-border rounded-2xl p-8 shadow-sm flex flex-col gap-8`
+- **Section Heading:** `text-[15px] font-semibold text-text-primary mb-4`
+- **Section Divider:** `<hr className="border-border -mx-8" />`
 - **Field Label:** `text-[12px] font-medium uppercase tracking-wide text-text-secondary`
 - **Input:** `w-full px-3 py-2 border border-border rounded-md bg-surface text-[14px] text-text-primary placeholder:text-text-muted focus:ring-1 focus:ring-accent focus:border-accent`
 - **Select:** Same as input + `appearance-none`
 - **Textarea:** Same as input + `resize-y`
-- **Tag Pill:** `px-2 py-0.5 rounded-full bg-accent-light text-accent text-[12px] font-medium`
-- **Remove Tag Button:** hover `hover:text-accent-dark`
-- **Add Tag Link:** `text-[12px] text-accent font-medium hover:underline` with Plus icon
-- **Work Exp Container:** `border border-border rounded-xl p-4`
-- **Disabled Input:** `opacity-60 cursor-not-allowed` (email field only)
+- **Tag Pill:** `px-3 py-1 rounded-full bg-surface border border-border text-text-primary text-[13px] font-medium`
+- **Add Tag Button:** `h-[42px] px-5 bg-surface border border-border rounded-md text-text-primary font-medium hover:bg-surface-secondary`
+- **Work Exp Card:** `border border-border rounded-xl p-5 flex flex-col gap-4 relative`
+- **Add Role Trigger:** inline with header `flex items-center gap-1.5 text-[13px] font-medium text-accent hover:underline`
+- **Save Button:** Full-width block below card: `w-full py-3 h-[48px] text-[15px] font-semibold`
 **Pattern notes:**
-Each form section is its own card with a ruled heading. Field labels are uppercase 12px tracking-wide — consistent with table column headers. Tag inputs use accent-light pill pattern shared with skills badges and CompletionIndicator tags. Work experience roles live in a secondary border container inside the section card (two border levels max per ui-rules.md).
+Unified single-card structure with internal section dividers. Custom tag inputs align the Add button inline. Job preferences (job titles, preferred locations) use comma-separated text fields as shown in designs.
+
 

@@ -25,8 +25,8 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(new URL("/login", request.url));
   }
 
-  // Redirect logged-in users away from auth pages (except callback which processes auth)
-  if ((path === "/" || isAuthPage) && accessToken && path !== "/auth/callback") {
+  // Redirect logged-in users away from auth pages (but NOT from "/")
+  if (isAuthPage && accessToken && path !== "/auth/callback") {
     return NextResponse.redirect(new URL("/dashboard", request.url));
   }
 

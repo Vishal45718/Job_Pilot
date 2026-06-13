@@ -14,7 +14,7 @@ export default async function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <Navbar />
+      <Navbar user={data.user} />
 
       {/* Content */}
       <main className="flex flex-col items-center justify-center min-h-[calc(100vh-56px)] gap-4 px-4">

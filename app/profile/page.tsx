@@ -15,21 +15,21 @@ export const metadata: Metadata = {
 
 export default async function ProfilePage() {
   const insforge = await createInsforgeServer();
-  const { data: { user }, error: authError } = await insforge.auth.getUser();
+  const { data: { user }, error: authError } = await insforge.auth.getCurrentUser();
 
   if (authError || !user) {
     redirect("/login");
   }
 
   // Fetch profile record from database
-  const { data: profile } = await insforge
+  const { data: profile } = await insforge.database
     .from("profiles")
     .select("*")
     .eq("id", user.id)
     .single();
 
   // Compute percentage and missing fields
-  const { percentage, missingFields } = calculateCompletion(profile || {});
+  const { percentage, missingFields } = await calculateCompletion(profile || {});
 
   // Pre-map database fields to UI FormState shape
   const initialFormState: ProfileFormInput = {
@@ -50,41 +50,26 @@ export default async function ProfilePage() {
     fieldOfStudy: profile?.education?.fieldOfStudy || "",
     institution: profile?.education?.institution || "",
     graduationYear: profile?.education?.graduationYear || "",
-    jobTitlesSeeking: profile?.job_titles_seeking || [],
+    jobTitlesSeeking: profile?.job_titles_seeking?.join(", ") || "",
     remotePreference: profile?.remote_preference || "",
     salaryExpectation: profile?.salary_expectation || "",
-    preferredLocations: profile?.preferred_locations || [],
+    preferredLocations: profile?.preferred_locations?.join(", ") || "",
     coverLetterTone: profile?.cover_letter_tone || "",
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <Navbar />
+    <div className="min-h-screen bg-background pb-12">
+      <Navbar user={user} />
 
-      <main className="w-full max-w-[1440px] mx-auto px-8 py-8 flex flex-col gap-6">
-        <div>
-          <h1 className="text-[24px] font-bold text-text-primary leading-8">
-            Your Profile
-          </h1>
-          <p className="text-[14px] text-text-secondary mt-1">
-            Keep your profile up to date so the AI can match you accurately.
-          </p>
-        </div>
-
+      <main className="w-full max-w-[800px] mx-auto px-4 py-8 flex flex-col gap-6">
         <CompletionIndicator
           percentage={percentage}
           missingFields={missingFields}
         />
 
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-6 items-start">
-          {/* Main form — left column */}
-          <ProfileForm initialData={initialFormState} />
+        <ResumeUpload resumeUrl={profile?.resume_pdf_url || null} />
 
-          {/* Resume sidebar — right column */}
-          <div className="lg:sticky lg:top-8">
-            <ResumeUpload resumeUrl={profile?.resume_pdf_url || null} />
-          </div>
-        </div>
+        <ProfileForm initialData={initialFormState} />
       </main>
     </div>
   );

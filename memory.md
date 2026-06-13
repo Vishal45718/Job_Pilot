@@ -1,32 +1,33 @@
-# Memory — Phase 1 Foundation & PostHog Setup Complete
+# Memory — Resume PDF Generation & secure Download (Feature 08)
 
-Last updated: 2026-06-12T16:15:00+05:30
+Last updated: 2026-06-13T10:33:00+05:30
 
 ## What was built
-- **PostHog User Identification**: Wired `posthog.identify()` and `posthog.reset()` inside [PostHogProvider.tsx](file:///home/jonsnow/Desktop/job_pilot/components/providers/PostHogProvider.tsx) to associate client tracking events with the active InsForge user session.
-- **PostHog Configuration Refactor**: Standardized the environment variables to use `NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN` and `NEXT_PUBLIC_POSTHOG_HOST` in [lib/posthog-client.ts](file:///home/jonsnow/Desktop/job_pilot/lib/posthog-client.ts) and [lib/posthog-server.ts](file:///home/jonsnow/Desktop/job_pilot/lib/posthog-server.ts).
-- **IDE PostHog MCP Integration**: Configured the IDE's Model Context Protocol config file ([mcp_config.json](file:///home/jonsnow/.gemini/antigravity-ide/mcp_config.json)) to run the PostHog remote MCP server via `mcp-remote` with a redacted authorization header.
-- **Homepage CTA Click Tracking**: Added client-side PostHog click event capturing (`homepage_cta_clicked`) to all primary CTAs in the [Hero](file:///home/jonsnow/Desktop/job_pilot/components/homepage/Hero.tsx), [BottomCTA](file:///home/jonsnow/Desktop/job_pilot/components/homepage/BottomCTA.tsx), and [Navbar](file:///home/jonsnow/Desktop/job_pilot/components/layout/Navbar.tsx) components.
-- **Login Flow Tracking**: Added capture tracking for `login_started` when starting the OAuth provider sign-in process in the [Login Page](file:///home/jonsnow/Desktop/job_pilot/app/(auth)/login/page.tsx).
-- **Auth Completion Tracking**: Configured client-side state mapping (`sessionStorage`) to successfully fire `login_completed` with the correct provider and distinct user ID inside [PostHogProvider.tsx](file:///home/jonsnow/Desktop/job_pilot/components/providers/PostHogProvider.tsx) once authenticated.
-- **PostHog Event Registry Update**: Added the three new events to the approved list in [code-standards.md](file:///home/jonsnow/Desktop/job_pilot/context/code-standards.md).
+
+- **Resume PDF Generation Endpoint** (`app/api/resume/generate/route.tsx`) — Generates an executive-style single-page PDF from profile fields using `@react-pdf/renderer` and LLM-polished accomplishments, uploading it to the `resumes` storage bucket.
+- **Authenticated Download Endpoint** (`app/api/resume/download/route.ts`) — A secure GET API endpoint that retrieves the user's PDF resume blob directly from storage using user session authentication and streams it with an attachment disposition.
+- **Secure Download Button & UI Polish** (`components/profile/ResumeUpload.tsx`) — Renamed 'Extract Data' to 'Extract from Resume' and added a secure 'Download' button that fires the authenticated download route, visible only for existing resumes.
+- **Auto-Cleanup on Upload** (`actions/profile.ts`) — Integrated explicit file deletion (`remove`) before upload in `uploadResume` action to guarantee clean replacements.
 
 ## Decisions made
-- Renamed the environment variables to align with standard PostHog Next.js documentation patterns.
-- Hand-coded the PostHog client and server configurations to completely bypass the automated wizard due to external service disruptions (LLM Gateway outages).
-- Chose client-side sessionStorage persistence to coordinate the `login_completed` tracking event since OAuth redirect loops span page requests.
+
+- **Blob Payloads for Storage API** — Used standard `Blob` payloads for storage upload tasks in Next.js Server Actions and Route Handlers to prevent Node `Buffer` representation errors within internal FormData serializations.
+- **Upsert via Remove** — Instead of relying on direct SDK upsert parameters (which can throw bad request errors), we explicitly invoke storage `.remove([filePath])` before `.upload(...)`.
+- **Private Storage Flow** — Files are read and served through the `/api/resume/download` middleware helper, maintaining access restrictions rather than using publicly exposed static URLs.
 
 ## Problems solved
-- **Dev Server Env Caching**: Clarified that updated `.env.local` keys (`phc_*`) require restarting the dev server to rebuild the client bundle.
-- **Host Variable Bug**: Corrected a client configuration typo in `lib/posthog-client.ts` where `api_host` was pointing to the token instead of the host variable.
+
+- **STORAGE_ERROR (400 Bad Request) during Upload**: Solved by replacing custom-patched `Buffer` objects with standard JS `Blob` structures inside the InsForge storage API handler.
+- **SDK Array Input Requirement**: Fixed the `.remove()` API calls to pass path items inside an array (`remove([filePath])`) to align with the InsForge / Supabase Storage SDK definition.
 
 ## Current state
-- Phase 1 (Foundation) manual setup and PostHog event tracking is fully complete and verified.
-- The project builds successfully with zero compilation or type warnings.
-- The PostHog MCP server configuration has been registered for the IDE.
+
+- **Feature 08 is complete and verified.** Generating resumes from profile details, secure storage transfers, auto-clearing previous PDFs, and downloading files via session-authorized streams are fully functional.
 
 ## Next session starts with
-- **Phase 2 — Feature 05: Profile Page Full UI**: Build the complete profile page interface (`app/profile/page.tsx`) using Tailwind v4 design tokens and mock data.
+
+- **Feature 09 — Find Jobs Page — Full UI**: Build the primary search, layout, and filter components for the Find Jobs exploration page.
 
 ## Open questions
+
 - None.
