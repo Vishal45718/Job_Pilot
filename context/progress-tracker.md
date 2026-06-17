@@ -6,9 +6,9 @@ Update this file after every completed feature. Any AI agent reading this should
 
 ## Current Status
 
-**Phase:** 2
-**Last completed:** 08 Resume PDF Generation from Profile
-**Next:** 09 Find Jobs Page — Full UI
+**Phase:** 5
+**Last completed:** 17 Analytics Charts — PostHog Data
+**Next:** Phase 5 Complete
 
 ---
 
@@ -30,21 +30,21 @@ Update this file after every completed feature. Any AI agent reading this should
 
 ### Phase 3 — Find Jobs Page
 
-- [ ] 09 Find Jobs Page — Full UI
-- [ ] 10 Adzuna Job Discovery
-- [ ] 11 Filter + Sort + Pagination
+- [x] 09 Find Jobs Page — Full UI
+- [x] 10 Adzuna Job Discovery
+- [x] 11 Filter + Sort + Pagination
 
 ### Phase 4 — Job Details Page
 
-- [ ] 12 Job Details Page — Full UI
-- [ ] 13 Company Research Agent
+- [x] 12 Job Details Page — Full UI
+- [x] 13 Company Research Agent
 
 ### Phase 5 — Dashboard
 
-- [ ] 14 Dashboard Page — Full UI
-- [ ] 15 Stats Bar — Real Data
-- [ ] 16 Recent Activity — Real Data
-- [ ] 17 Analytics Charts — PostHog Data
+- [x] 14 Dashboard Page — Full UI
+- [x] 15 Stats Bar — Real Data
+- [x] 16 Recent Activity — Real Data
+- [x] 17 Analytics Charts — PostHog Data
 
 ---
 
@@ -60,6 +60,8 @@ Update this file after every completed feature. Any AI agent reading this should
 - **PDF Extraction Worker Path** — Standard `pdf-parse` (v2) fails to find `pdf.worker.mjs` in Next.js Turbopack development builds because compilation relocates the files. Fixed by explicitly calling `PDFParse.setWorker()` with the absolute path in the `node_modules` directory (`path.join(process.cwd(), "node_modules/pdf-parse/dist/pdf-parse/esm/pdf.worker.mjs")`).
 - **Storage Blob Uploads & Deletion** — Uploading a standard `Blob` using `insforge.storage.from("resumes").upload` is preferred over standard `Buffer` to prevent Node/FormData serialization issues in client-side Next.js HTTP wrappers. Deleting the existing file first via `.remove([path])` simulates clean upserting and avoids duplicate file constraints.
 - **Authenticated Resume Download** — Added an API route at `/api/resume/download/route.ts` that downloads the raw resume PDF blob from storage via the authenticated server client, streaming it back as a file attachment, avoiding public exposure of URLs.
+- **OpenRouter for GPT-4o** — No `OPENAI_API_KEY` available; all GPT-4o calls (job matching, scoring) route through OpenRouter using the existing `OPENROUTER_API_KEY`. The `openai` SDK is reused with `baseURL: "https://openrouter.ai/api/v1"` and model string `"openai/gpt-4o"`. No new package installed.
+- **Feature 10 files** — `lib/adzuna.ts` (Adzuna client), `agent/types.ts` (shared types), `agent/matcher.ts` (GPT-4o scoring via OpenRouter), `agent/adzuna.ts` (orchestrator), `app/api/agent/find/route.ts` (API route). `FindJobsSearch.tsx` wired with loading/success/error state machine and `router.refresh()` after completion.
 
 ---
 

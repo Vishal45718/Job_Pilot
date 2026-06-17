@@ -353,10 +353,10 @@ Education: ${JSON.stringify(profile.education || {})}`;
     
     // Attempt to remove existing file to avoid duplicate errors (simulating upsert)
     console.log(`[api/resume/generate] Removing existing PDF if any...`);
-    await insforge.storage.from(bucketName).remove([filePath]);
+    await insforge.storage.from(bucketName).remove(filePath);
 
     // Use a standard Blob as expected by the SDK upload API
-    const filePayload = new Blob([pdfBuffer], { type: "application/pdf" });
+    const filePayload = new Blob([new Uint8Array(pdfBuffer)], { type: "application/pdf" });
 
     console.log(`[api/resume/generate] Bucket name: ${bucketName}`);
     console.log(`[api/resume/generate] Final file path: ${filePath}`);

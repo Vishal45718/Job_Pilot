@@ -63,15 +63,37 @@ Modal-style centered card on a full background. Uses exact custom design token s
 
 ### DashboardPage
 - **Path:** `app/dashboard/page.tsx`
-- **Last updated:** 2026-06-12
-- **Page Background:** `bg-background`
-- **Card Container:** `bg-surface border border-border rounded-2xl p-8 shadow-sm max-w-md w-full text-center`
-- **Text Headings:** `text-[19px] font-bold text-text-darkest mb-1`
-- **Text Secondary:** `text-[14px] text-text-secondary mb-1`
-- **Muted Text:** `text-[13px] text-text-muted`
-- **Icon Container:** `bg-success-lightest rounded-full`
+- **Last updated:** 2026-06-17
+- **Page Background:** `bg-background pb-12`
+- **Main Container:** `w-full max-w-[1440px] mx-auto px-6 py-8 flex flex-col gap-6`
 **Pattern notes:**
-Minimal placeholder layout showing user's signed in state. Center-aligned card on a full background. Uses custom green icon container for success state checkmark.
+Full dashboard layout. Uses a wide 1440px max-width container to accommodate multiple charts.
+
+### StatsBar
+- **Path:** `components/dashboard/StatsBar.tsx`
+- **Last updated:** 2026-06-17
+- **Grid Container:** `grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6`
+- **Card Container:** `bg-surface border border-border rounded-2xl p-6 shadow-sm flex flex-col justify-between`
+- **Trend Badge:** `bg-success-lightest text-success-darker rounded-sm px-2 py-0.5 text-[12px] font-medium`
+**Pattern notes:**
+Simple 4-column metric cards.
+
+### RecentActivity
+- **Path:** `components/dashboard/RecentActivity.tsx`
+- **Last updated:** 2026-06-17
+- **Card Container:** `bg-surface border border-border rounded-2xl shadow-sm flex flex-col h-full`
+- **Timeline Ring:** `w-4 h-4 rounded-full flex items-center justify-center border-2 border-surface`
+- **Timeline Dot:** `w-2 h-2 rounded-full`
+**Pattern notes:**
+Vertical timeline using absolute positioning for the connecting line. Color-coded dots based on activity type.
+
+### AnalyticsCharts
+- **Path:** `components/dashboard/AnalyticsCharts.tsx`
+- **Last updated:** 2026-06-17
+- **Card Container:** `bg-surface border border-border rounded-2xl p-6 shadow-sm flex flex-col h-full`
+- **Chart Container:** `flex-1 w-full h-[250px]`
+**Pattern notes:**
+Recharts wrappers utilizing `ResponsiveContainer`. Uses custom SVG gradients for line charts and specific border radius for bar charts.
 
 ### CompletionIndicator
 - **Path:** `components/profile/CompletionIndicator.tsx`
@@ -119,4 +141,78 @@ Standard container. Drag-and-drop zone transition on hover. Bottom footer contai
 **Pattern notes:**
 Unified single-card structure with internal section dividers. Custom tag inputs align the Add button inline. Job preferences (job titles, preferred locations) use comma-separated text fields as shown in designs.
 
+### FindJobsSearch
+- **Path:** `components/find-jobs/FindJobsSearch.tsx`
+- **Last updated:** 2026-06-13
+- **Card Container:** `bg-surface border border-border rounded-2xl p-6 shadow-sm flex flex-col gap-6`
+- **Input Wrapper:** `relative w-full` with absolute icon on the left `pl-3 flex items-center pointer-events-none`
+- **Input:** `w-full pl-9 pr-3 py-2 border border-border rounded-md bg-surface text-[14px] text-text-primary placeholder:text-text-muted focus:ring-1 focus:ring-accent focus:border-accent outline-none`
+- **Success Banner:** `bg-success-lightest border border-success-light rounded-lg px-4 py-3 flex items-center gap-2`
+**Pattern notes:**
+Groups top-level search form and match result banner into a single card container.
 
+### FindJobsFilter
+- **Path:** `components/find-jobs/FindJobsFilter.tsx`
+- **Last updated:** 2026-06-13
+- **Toolbar Container:** `bg-surface border border-border rounded-xl p-3 flex flex-col md:flex-row items-center justify-between gap-4 shadow-sm`
+- **Search Input (No Border):** `w-full pl-9 pr-3 py-2 border-none bg-transparent text-[14px] outline-none`
+- **Selects:** Native select styled `appearance-none bg-surface border border-border rounded-md px-3 py-2 pr-8 text-[14px]` with absolute ChevronDown icon.
+**Pattern notes:**
+Inline filter toolbar placed between search card and results table. Synchronized with URL search parameters.
+
+### JobsTable
+- **Path:** `components/find-jobs/JobsTable.tsx`
+- **Last updated:** 2026-06-13
+- **Table Container:** `bg-surface border border-border rounded-2xl shadow-sm overflow-hidden flex flex-col`
+- **Header Th:** `px-6 py-4 text-[12px] font-medium text-text-secondary uppercase tracking-wider`
+- **Row Tr:** `hover:bg-surface-secondary transition-colors group border-b border-border`
+- **Company Icon:** `w-10 h-10 rounded-lg border border-border bg-surface-secondary flex items-center justify-center text-text-muted group-hover:bg-surface`
+- **Match Score Bar:** `w-[100px] h-1.5 bg-border-light rounded-full overflow-hidden` with colored fill and % text.
+- **Pagination Footer:** `px-6 py-4 border-t border-border flex flex-col md:flex-row items-center justify-between gap-4`
+**Pattern notes:**
+Standard data table with fixed minimum width (`min-w-[800px]`) allowing x-overflow. Contains the inline match score visual progress bar. Table rows are cursor-pointer and link to individual job pages. Footer handles dynamic pagination.
+
+### JobInfo
+- **Path:** `components/job-details/JobInfo.tsx`
+- **Last updated:** 2026-06-13
+- **Card Container:** `bg-surface border border-border rounded-2xl p-6 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-6`
+- **Company Logo:** `w-16 h-16 rounded-xl border border-border bg-surface-secondary flex items-center justify-center text-text-muted`
+- **Match Badge:** `px-2.5 py-0.5 rounded-full font-semibold text-[12px] bg-success-lightest text-success-darker`
+- **Info Grid:** `grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4`
+- **Info Card:** `bg-surface border border-border rounded-2xl p-6 shadow-sm flex items-center gap-4`
+**Pattern notes:**
+Top header for job details containing the dynamic color match score badge and standard external link button. Below it is a 4-column responsive grid containing key metrics with varied color icon circles.
+
+### MatchScore
+- **Path:** `components/job-details/MatchScore.tsx`
+- **Last updated:** 2026-06-13
+- **Card Container:** `bg-surface border border-border rounded-2xl p-6 shadow-sm flex flex-col gap-6`
+- **Section Heading:** `text-[12px] font-bold uppercase tracking-widest text-text-secondary`
+- **Matched Skill Tag:** `px-3 py-1.5 rounded-full bg-success-lightest text-success-foreground text-[13px] font-medium`
+- **Missing Skill Tag:** `px-3 py-1.5 rounded-full bg-accent-muted text-accent text-[13px] font-medium`
+**Pattern notes:**
+Split into reasoning text and tag lists. Skills are visually separated by success (green) and accent (purple) background pills to differentiate user matches vs gaps.
+
+### JobDescription
+- **Path:** `components/job-details/JobDescription.tsx`
+- **Last updated:** 2026-06-13
+- **Card Container:** `bg-surface border border-border rounded-2xl p-6 shadow-sm flex flex-col gap-4`
+- **Paragraph:** `text-[14px] font-medium text-text-primary leading-relaxed whitespace-pre-wrap`
+**Pattern notes:**
+Simple text block wrapper maintaining standard border radius and padding constraints.
+
+### CompanyResearch
+- **Path:** `components/job-details/CompanyResearch.tsx`
+- **Last updated:** 2026-06-13
+- **Card Container:** `bg-surface border border-border rounded-2xl p-6 shadow-sm flex flex-col gap-6`
+- **Empty State Container:** `flex flex-col items-center justify-center text-center py-16 px-6`
+- **Large Icon:** `w-14 h-14 rounded-full bg-surface-secondary border border-border flex items-center justify-center text-text-muted mb-5 shadow-sm`
+**Pattern notes:**
+Currently renders an empty state to prompt user action. Similar empty state pattern as dashboard placeholders.
+
+### JobActions
+- **Path:** `components/job-details/JobActions.tsx`
+- **Last updated:** 2026-06-13
+- **Main Button:** `w-full bg-accent text-white hover:bg-accent-dark rounded-xl h-[56px] text-[16px] font-semibold flex items-center justify-center transition-colors shadow-sm`
+**Pattern notes:**
+Huge bottom CTA sticking out prominently to encourage the final conversion step. Uses larger border radius (`rounded-xl`) and height.

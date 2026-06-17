@@ -210,7 +210,7 @@ export async function uploadResume(fileBase64: string, fileName: string) {
     const blob = new Blob([buffer], { type: "application/pdf" });
 
     // Attempt to remove existing file to avoid duplicate errors (simulating upsert)
-    await insforge.storage.from("resumes").remove([`${user.id}/resume.pdf`]);
+    await insforge.storage.from("resumes").remove(`${user.id}/resume.pdf`);
 
     // Upload to InsForge Storage bucket 'resumes' at resumes/{user_id}/resume.pdf
     const { data: uploadData, error: uploadError } = await insforge.storage

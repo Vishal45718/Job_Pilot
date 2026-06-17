@@ -1,36 +1,78 @@
 import { redirect } from "next/navigation";
-import { cookies } from "next/headers";
-import { createServerClient } from "@insforge/sdk/ssr";
 import { Navbar } from "@/components/layout/Navbar";
+import { createInsforgeServer } from "@/lib/insforge-server";
+import { calculateCompletion } from "@/actions/profile";
+import { CompletionIndicator } from "@/components/profile/CompletionIndicator";
+import { StatsBar } from "@/components/dashboard/StatsBar";
+import { RecentActivity } from "@/components/dashboard/RecentActivity";
+import {
+  CompanyResearchChart,
+  JobsFoundChart,
+  MatchScoreChart,
+} from "@/components/dashboard/AnalyticsCharts";
+import { getAnalyticsData } from "@/lib/posthog-api";
+
+export const metadata = {
+  title: "Dashboard — JobPilot",
+};
 
 export default async function DashboardPage() {
-  const cookieStore = await cookies();
-  const insforge = createServerClient({ cookies: cookieStore });
-  const { data } = await insforge.auth.getCurrentUser();
+  const insforge = await createInsforgeServer();
+  const {
+    data: { user },
+    error: authError,
+  } = await insforge.auth.getCurrentUser();
 
-  if (!data?.user) {
+  if (authError || !user) {
     redirect("/login");
   }
 
+  // Fetch profile record from database
+  const { data: profile } = await insforge.database
+    .from("profiles")
+    .select("*")
+    .eq("id", user.id)
+    .single();
+
+  // Compute percentage and missing fields
+  const { percentage, missingFields } = await calculateCompletion(profile || {});
+
+  // Fetch chart data from PostHog
+  const { researchData, jobsData, matchData } = await getAnalyticsData(user.id);
+
   return (
-    <div className="min-h-screen bg-background">
-      <Navbar user={data.user} />
+    <div className="min-h-screen bg-background pb-12">
+      <Navbar user={user} />
 
       {/* Content */}
-      <main className="flex flex-col items-center justify-center min-h-[calc(100vh-56px)] gap-4 px-4">
-        <div className="bg-surface border border-border rounded-2xl p-8 shadow-sm max-w-md w-full text-center">
-          <div className="mx-auto mb-4 w-12 h-12 bg-success-lightest rounded-full flex items-center justify-center">
-            <svg className="w-6 h-6 text-success" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-            </svg>
+      <main className="w-full max-w-[1440px] mx-auto px-6 py-8 flex flex-col gap-6">
+        {percentage < 100 && (
+          <div className="w-full">
+            <CompletionIndicator
+              percentage={percentage}
+              missingFields={missingFields}
+            />
           </div>
-          <h1 className="text-[19px] font-bold text-text-darkest mb-1">You&apos;re signed in!</h1>
-          <p className="text-[14px] text-text-secondary mb-1">
-            Welcome, <span className="text-text-primary font-medium">{data.user.email}</span>
-          </p>
-          <p className="text-[13px] text-text-muted">
-            Dashboard is coming soon. Check back after Phase 5 of the build plan.
-          </p>
+        )}
+
+        <StatsBar userId={user.id} />
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-1">
+            <RecentActivity userId={user.id} />
+          </div>
+          <div className="lg:col-span-2">
+            <CompanyResearchChart data={researchData} />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-2">
+            <JobsFoundChart data={jobsData} />
+          </div>
+          <div className="lg:col-span-1">
+            <MatchScoreChart data={matchData} />
+          </div>
         </div>
       </main>
     </div>
